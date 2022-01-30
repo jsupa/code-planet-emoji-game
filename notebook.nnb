@@ -1,0 +1,38 @@
+{
+    "cells": [
+        {
+            "language": "typescript",
+            "source": [
+                "const emojis = ['😄','🤣','🙂','🙃','😉','😇','😍','🤥','😘','😚','😛','😜','😋','🤗','🤔','🤐','😶','🤑','😏','🙄','😳','😬','😴','🤕','🤠','🤧','😢','😵','😎','🤓','😡','🤢','😭','😫','😠']\nconst objects = 30"
+            ],
+            "outputs": []
+        },
+        {
+            "language": "typescript",
+            "source": [
+                "const art = [];\nfor (let i = 0; i < objects; i++) {\n    let emoji = emojis[Math.floor(Math.random() * emojis.length)];\n    while (art.includes(emoji)) {\n        emoji = emojis[Math.floor(Math.random() * emojis.length)];\n    }\n    art.push(emoji);\n}\n\nconst matchEmoji = art[Math.floor(Math.random() * art.length)];\n\nchangeMe()\n\nfunction changeMe() {\n    const change = Math.floor(Math.random() * art.length);\n    if (matchEmoji != art[change]) {\n        art[change] = matchEmoji;\n        console.log(matchEmoji)\n    } else {\n        changeMe()\n    }\n}\n\nconsole.log(art);\n"
+            ],
+            "outputs": [
+                {
+                    "items": [
+                        {
+                            "mime": "application/vnd.code.notebook.stdout",
+                            "value": [
+                                "🤔",
+                                "[",
+                                "  '🤧', '😏', '😇', '🤐', '🙂',",
+                                "  '😚', '🤠', '😶', '🤣', '🤥',",
+                                "  '🤕', '🤓', '😉', '😬', '🤗',",
+                                "  '😴', '😡', '😎', '😳', '😄',",
+                                "  '😋', '😛', '🙃', '🙄', '😫',",
+                                "  '🤔', '🤔', '😠', '😵', '😍'",
+                                "]",
+                                ""
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

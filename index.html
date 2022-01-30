@@ -1,0 +1,352 @@
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="author" content="Jakub Š. <hello@code-planet.eu>" />
+        <title>🚀 Emoji Game</title>
+        <style>
+            @font-face {
+                font-family: Menlo;
+                src: local('Menlo'),
+                    url('https://code-planet.eu/Menlo-Regular.woff')
+                        format('woff');
+            }
+
+            * {
+                font-style: normal;
+                font-weight: normal;
+                font-family: Menlo;
+                text-align: center;
+            }
+
+            a {
+                color: #b5b4f2;
+                text-decoration: none;
+                position: relative;
+                transition: color 0.3s;
+            }
+
+            a::after {
+                content: '';
+                background: #b5b4f2;
+                width: calc(100% + 10px);
+                z-index: -1;
+                height: 0;
+                position: absolute;
+                bottom: -4px;
+                left: -5px;
+                transition: all 0.3s;
+            }
+
+            a:hover::after {
+                height: calc(100% + 8px);
+            }
+
+            a:hover {
+                color: #161b22;
+            }
+
+            @media (max-width: 580px) {
+                a:hover::after {
+                    height: 0;
+                }
+
+                a:hover {
+                    color: #b5b4f2;
+                }
+
+                body {
+                    padding: 0 10px !important;
+                }
+                .grid-6x5 {
+                    grid-template-columns: repeat(5, 50px) !important;
+                    grid-template-rows: repeat(5, 50px) !important;
+                    font-size: 2em !important;
+                    max-width: 250px !important;
+                }
+            }
+
+            .grid-6x5 {
+                display: grid;
+                grid-template-columns: repeat(5, 70px);
+                grid-template-rows: repeat(5, 70px);
+                justify-items: center;
+                max-width: 350px;
+                width: 100%;
+                font-size: 40px;
+                margin: 0 auto;
+            }
+            .grid-6x5 div {
+                cursor: pointer;
+                opacity: 0.5;
+                transition: 0.3s;
+                width: 100%;
+                height: 100%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            .grid-6x5 div:hover {
+                opacity: 1;
+                transform: scale(1.4);
+            }
+            .selected {
+                opacity: 1 !important;
+                transform: scale(1.4);
+            }
+            .green_timer::after {
+                content: ' +10';
+                color: #19c219;
+            }
+            .blue_score::after {
+                content: ' +1';
+                color: #266cc7;
+            }
+            .hint {
+                display: none;
+                cursor: pointer;
+            }
+            #main {
+                font-size: 1em;
+                display: grid;
+                margin: 0 auto;
+                width: 100%;
+                height: 100%;
+                max-width: 1000px;
+                max-height: 800px;
+                position: relative;
+                top: 50%;
+                transform: translateY(-50%);
+                align-items: center;
+            }
+            body {
+                background: #161b22;
+                padding: 0 40px;
+            }
+            .header h1 {
+                font-size: 2em;
+                letter-spacing: 0.03em;
+                color: #fff;
+            }
+            .footer p {
+                color: #c9d1d9;
+                font-size: 1em;
+                letter-spacing: 0.04em;
+            }
+            .game {
+                color: #c9d1d9;
+                font-size: 1em;
+                letter-spacing: 0.04em;
+            }
+            .time,
+            .score {
+                margin: 15px 0;
+            }
+            .hint {
+                margin-top: 15px;
+                height: 20px;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="main">
+            <div class="header">
+                <h1>🎮 Find the matching pair of emoji</h1>
+            </div>
+            <div class="game">
+                <div class="timer"></div>
+                <div class="score"></div>
+                <div class="grid-6x5"></div>
+                <div class="hint">hint?</div>
+            </div>
+            <!-- <div class="footer">
+                <p>application status</p>
+                <h3>
+                    <span class="status">🔴 </span
+                    ><a href="#" class="server">VPS.code-planet.eu</a
+                    ><span class="refresh_time"> 11:15</span>
+                </h3>
+            </div> -->
+        </div>
+    </body>
+    <script>
+        const emojis = [
+            '😄',
+            '🤣',
+            '🙂',
+            '🙃',
+            '😉',
+            '😇',
+            '😍',
+            '🤥',
+            '😘',
+            '😚',
+            '😛',
+            '😜',
+            '😋',
+            '🤗',
+            '🤔',
+            '🤐',
+            '😶',
+            '🤑',
+            '😏',
+            '🙄',
+            '😳',
+            '😬',
+            '😴',
+            '🤕',
+            '🤠',
+            '🤧',
+            '😢',
+            '😵',
+            '😎',
+            '🤓',
+            '😡',
+            '🤢',
+            '😭',
+            '😫',
+            '😠',
+        ];
+        const objects = 25;
+        let score = 0;
+        let click = 0;
+        let timer = 60;
+        let art = [];
+        let matchEmoji;
+        let nowselect = 0;
+        generateArt();
+        function generateArt() {
+            for (let i = 0; i < objects; i++) {
+                let emoji = emojis[Math.floor(Math.random() * emojis.length)];
+                while (art.includes(emoji)) {
+                    emoji = emojis[Math.floor(Math.random() * emojis.length)];
+                }
+                art.push(emoji);
+            }
+
+            matchEmoji = art[Math.floor(Math.random() * art.length)];
+
+            changeMe();
+        }
+
+        function changeMe() {
+            const change = Math.floor(Math.random() * art.length);
+            if (matchEmoji != art[change]) {
+                art[change] = matchEmoji;
+                generateHtml();
+            } else {
+                changeMe();
+            }
+        }
+        function generateHtml() {
+            document.getElementsByClassName('grid-6x5')[0].innerHTML = '';
+            document.getElementsByClassName(
+                'score'
+            )[0].innerHTML = `Found: ${score}`;
+            document.getElementsByClassName(
+                'timer'
+            )[0].innerHTML = `Timer: ${timer} sec`;
+            art.forEach((emoj) => {
+                document.getElementsByClassName(
+                    'grid-6x5'
+                )[0].innerHTML += `<div class='emoj'>${emoj}</div>`;
+            });
+
+            document.querySelectorAll('.emoj').forEach((emoj) => {
+                emoj.addEventListener('click', (e) => {
+                    if (click == 0) {
+                        startTimer();
+                        // setTimeout(() => {
+                        //     document.getElementsByClassName(
+                        //         'hint'
+                        //     )[0].style.display = 'block';
+                        // }, 10000);
+                    }
+                    click++;
+                    select(e.target);
+                });
+            });
+        }
+        function select(object) {
+            object.classList.add('selected');
+            const selected = document.getElementsByClassName('selected');
+            if (selected.length == 2) {
+                if (selected[0].innerHTML == selected[1].innerHTML) {
+                    console.log('match');
+                    document.querySelectorAll('.selected').forEach((emoj) => {
+                        emoj.classList.add('match');
+                    });
+                    score = score + 1;
+                    nowselect = 0;
+                    showAddSeconds();
+                    timer = timer + 10;
+                    setTimeout(() => {
+                        document
+                            .querySelectorAll('.selected')
+                            .forEach((emoj) => {
+                                emoj.classList.remove('selected');
+                            });
+                        art = [];
+                        generateArt();
+                    }, 1000);
+                } else {
+                    nowselect = 0;
+                    console.log('no match');
+                    document.querySelectorAll('.selected').forEach((emoj) => {
+                        emoj.classList.remove('selected');
+                    });
+                }
+            } else if (selected[0] == object && nowselect == 1) {
+                selected[0].classList.remove('selected');
+                nowselect = 0;
+            } else {
+                nowselect = 1;
+            }
+        }
+        function startTimer() {
+            setInterval(() => {
+                timer = timer - 1;
+                document.getElementsByClassName(
+                    'timer'
+                )[0].innerHTML = `Timer: ${timer} sec`;
+                if (timer == 0) {
+                    alert('Game Over\nFound: ' + score);
+                    location.reload();
+                }
+            }, 1000);
+        }
+        function showAddSeconds() {
+            document
+                .getElementsByClassName('timer')[0]
+                .classList.add('green_timer');
+            document
+                .getElementsByClassName('score')[0]
+                .classList.add('blue_score');
+            setTimeout(() => {
+                document
+                    .getElementsByClassName('timer')[0]
+                    .classList.remove('green_timer');
+
+                document
+                    .getElementsByClassName('score')[0]
+                    .classList.remove('blue_score');
+            }, 2000);
+        }
+
+        document
+            .getElementsByClassName('hint')[0]
+            .addEventListener('click', () => {
+                document.getElementsByClassName('hint')[0].style.display =
+                    'none';
+                document.querySelectorAll('.emoj').forEach((emoj) => {
+                    if (emoj.innerHTML == matchEmoji) {
+                        emoj.style.opacity = 1;
+                    }
+                });
+                document.querySelectorAll('.selected').forEach((emoj) => {
+                    emoj.classList.remove('selected');
+                });
+                nowselect = 0;
+            });
+    </script>
+</html>
